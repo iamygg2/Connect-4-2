@@ -1,5 +1,5 @@
 import numpy as np
-#check for working news s jfslkdjf
+# removed to check
 
 
 class Board:
