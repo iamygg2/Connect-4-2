@@ -1,4 +1,6 @@
 import numpy as np
+#check for working news s jfslkdjf
+
 
 class Board:
     def __init__(self):
