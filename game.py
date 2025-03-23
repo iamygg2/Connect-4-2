@@ -1,5 +1,7 @@
 import numpy as np
 
+# just a check for the web version
+
 class Board:
     def __init__(self):
         self.board = [["" for _ in range(7)] for _ in range(6)]
