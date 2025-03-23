@@ -1,6 +1,4 @@
 import numpy as np
-# removed to check
-
 
 class Board:
     def __init__(self):
