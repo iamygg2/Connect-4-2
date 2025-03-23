@@ -8,42 +8,6 @@ class Board:
         self.columns = 7
         self.player1 = "R"
         self.player2 = "Y"
-
-    def checkBoard(self):
-        # Check Diagonals
-        self.npBoard = np.array(self.board)
-        for row in range(0, 3):
-            for column in range(0, 4):
-                diagonal = [self.board[row + i][column + i] for i in range(4)]
-                if diagonal[0] != "" and len(set(diagonal)) == 1:
-                    return diagonal[0]
-                            
-        # Check Reverse Diagonals
-        self.flippedBoard = np.flipud(self.board)
-        for row in range(0, 3):
-            for column in range(3, 7):
-                self.reverseDiagonal = [self.board[row + i][column - i] for i in range(4)]
-                if self.reverseDiagonal[0] != "" and len(set(self.reverseDiagonal)) == 1:
-                    return self.reverseDiagonal[0]
-        
-        # Check Verticals
-        for row in range(0,self.rows-3):
-            for column in range(0,self.columns):
-                self.vertical = self.npBoard[row:row+4, column]
-                if np.all(self.vertical[1:] == self.vertical[:-1]) and self.vertical[0] == "R":
-                    return "R"
-                if np.all(self.vertical[1:] == self.vertical[:-1]) and self.vertical[0] == "Y":
-                    return "Y"
-
-        # Check Horizontals
-        for row in range(0, self.rows):
-            for column in range(0, self.columns-3):
-                self.vertical = self.npBoard[row,column:column+4]
-                if np.all(self.vertical[1:] == self.vertical[:-1]) and self.vertical[0] == "R":
-                    return "R"
-                if np.all(self.vertical[1:] == self.vertical[:-1]) and self.vertical[0] == "Y":
-                    return "Y"
-
                     
     def altCheckBoard(self, row, column):
         result = self.checkVertical(row, column)
@@ -111,7 +75,7 @@ class Board:
                 return row
 
     def reset(self):
-        self.board = [["" for _ in range(self.columns)] for _ in range(self.rows)]
+        self.board = [["" for i in range(self.columns)] for i in range(self.rows)]
 
 
     def game(self):
