@@ -121,5 +121,17 @@ class Board:
         else:
             print("All spots filled! TIE!")
 
+    def minimax(firstPlayer):
+        pass
+
+    def heuristic():
+        pass
+
+    def npCheck(self):
+        print(np.array(self.board))
+
+    
+
 board = Board()
+board.npCheck()
 board.game()
