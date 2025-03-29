@@ -121,7 +121,7 @@ class Board:
         else:
             print("All spots filled! TIE!")
 
-    def minimax(firstPlayer):
+    def minimax(self, depth, maximizingPlayer, player):
         pass
 
     def heuristic(self, player):
