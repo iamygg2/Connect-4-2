@@ -160,7 +160,7 @@ class Board:
         count = 0
         for row in range(self.rows):
             for column in range(self.columns-3):
-                window = self.board[row][col:col+4]
+                window = self.board[row][column:column+4]
                 if self.checkFour(window, player):
                     count += 1
         return count
