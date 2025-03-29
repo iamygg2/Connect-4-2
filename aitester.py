@@ -124,12 +124,87 @@ class Board:
     def minimax(firstPlayer):
         pass
 
-    def heuristic():
-        pass
+    def heuristic(self, player):
+        if player == "R":
+            playerLines = 0
+            playerLines += self.countHorizontal("R")
+            playerLines += self.countVertical("R")
+            playerLines += self.countDiagonal("R")
+            playerLines += self.countReverseDiagonal("R")
+
+            opponentLines = 0
+            opponentLines += self.countHorizontal("Y")
+            opponentLines += self.countVertical("Y")
+            opponentLines += self.countDiagonal("Y")
+            opponentLines += self.countReverseDiagonal("Y")
+        else:
+            playerLines = 0
+            playerLines += self.countHorizontal("Y")
+            playerLines += self.countVertical("Y")
+            playerLines += self.countDiagonal("Y")
+            playerLines += self.countReverseDiagonal("Y")
+
+            opponentLines = 0
+            opponentLines += self.countHorizontal("R")
+            opponentLines += self.countVertical("R")
+            opponentLines += self.countDiagonal("R")
+            opponentLines += self.countReverseDiagonal("R")
+        
+        return playerLines - opponentLines
+
 
     def npCheck(self):
         print(np.array(self.board))
 
+    def countHorizontal(self, player):
+        count = 0
+        for row in range(self.rows):
+            for column in range(self.columns-3):
+                window = self.board[row][col:col+4]
+                if self.checkFour(window, player):
+                    count += 1
+        return count
+
+
+    def countVertical(self, player):
+        count = 0
+        for row in range(self.rows-3):
+            for column in range(self.columns):
+                window = self.board[row:row+4][column]
+                if self.checkFour(window, player):
+                    count += 1
+        return count
+
+    def countDiagonal(self, player):
+        count = 0
+        for row in range(self.rows-3):
+            for column in range(self.columns-3):
+                window = [self.board[row+i][column+i] for i in range(4)]
+                if self.checkFour(window, player):
+                    count += 1
+
+        return count
+    
+    def countReverseDiagonal(self, player):
+        count = 0
+        for row in range(self.rows, 3, -1):
+            for column in range(self.columns-3):
+                window = [[self.board[row-1][column+i] for i in range(4)]]
+                if self.checkFour(window, player):
+                    count += 1
+
+        return count
+
+    def checkFour(self, window, player):
+        if player == "R":
+            playerCount = window.count(player)
+            opponentCount = window.count("Y")
+        else:
+            playerCount = window.count(player)
+            opponentCount = window.count("R")
+
+        return opponentCount == 0 and playerCount > 0
+    
     
 
 board = Board()
