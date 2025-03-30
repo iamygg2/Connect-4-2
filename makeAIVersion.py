@@ -193,16 +193,15 @@ class Board:
 
             print("AI's turn")
 
-            _, bestMove = self.minimax(self.board, 3, True, "Y")
+            _, bestMove = self.minimax(self.board, 5, True, "Y")
             
             if bestMove is None:
-                print(2)
+                bestMove = self.possibleMoves(self.board)[0]
             row = self.move(bestMove, self.player2)
             counter += 1
             winner = self.altCheckBoard(row, bestMove)
             if winner == "Y":
                 print(f"Player {winner} wins!")
-                notWinner = False
                 break
         else:
             print("All spots filled! TIE!")
@@ -241,6 +240,7 @@ class Board:
             
         else:
             minEval = float("inf")
+            bestMove = None
             for move in self.possibleMoves(board):
                 copyBoard = [row.copy() for row in board]
                 for row in range(self.rows - 1, -1, -1):
