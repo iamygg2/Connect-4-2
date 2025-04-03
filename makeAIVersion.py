@@ -1,5 +1,7 @@
 import numpy as np
 
+#check
+
 class Board:
     def __init__(self):
         self.board = [["" for _ in range(7)] for _ in range(6)]
