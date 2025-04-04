@@ -21,4 +21,13 @@ class Board:
         self.player2_board = 0
 
     def make_move(self):
-        
+        pass
+
+
+
+class BasePlayer:
+    def __init__ (self):
+        self.name = name
+        self.is_AI = is_AI
+
+    
