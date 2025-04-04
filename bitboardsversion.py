@@ -30,4 +30,6 @@ class BasePlayer:
         self.name = name
         self.is_AI = is_AI
 
-    
+class Player:
+    def __init__ (self):
+        pass
