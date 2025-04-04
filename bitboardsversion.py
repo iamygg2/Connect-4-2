@@ -30,6 +30,15 @@ class BasePlayer:
         self.name = name
         self.is_AI = is_AI
 
+    def flip_bit(self, player, row, column):
+        pass
+
+    def get_Nth_bit(self, num, n):
+        pass
+    
+    def set_Nth_bit(self, num, n):
+        pass
+
 class Player:
     def __init__ (self):
         pass
