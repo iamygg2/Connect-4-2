@@ -95,7 +95,7 @@ class Board:
 
     def print_board(self):
         """Print the current state of the board."""
-        print("\n 1  2  3  4  5  6  7")  # Column numbers for reference
+        print("  0  1  2  3  4  5  6")  # Column numbers for reference
         for row in range(self.height - 1, -1, -1):  # Start from the top row
             line = ""
             for col in range(self.width):
@@ -108,64 +108,15 @@ class Board:
                     line += " . "  # Empty spot
             print(line)
 
-    def isFull(self):
-        """Check if the board is full."""
-        return all((self.bitboards[0] | self.bitboards[1]) & (1 << (column * self.height + row)) for column in range(self.width) for row in range(self.height))
-
 # Example usage
 board = Board("Alex", "Bob")
 board.print_board()
 
 # Simulate some moves
 board.make_move(board.player[1], 0)  # Player 1 places in Column 0
-board.make_move(board.player[0], 0)  # Player 1 places in Column 0
-board.make_move(board.player[1], 0)  # Player 1 places in Column 0
-board.make_move(board.player[1], 0)  # Player 1 places in Column 0
-board.make_move(board.player[0], 0)  # Player 1 places in Column 0
-board.make_move(board.player[0], 0)  # Player 1 places in Column 0
-
 board.make_move(board.player[1], 1)  # Player 2 places in Column 1
-board.make_move(board.player[1], 1)  # Player 2 places in Column 1
-board.make_move(board.player[0], 1)  # Player 2 places in Column 1
-board.make_move(board.player[1], 1)  # Player 2 places in Column 1
-board.make_move(board.player[0], 1)  # Player 2 places in Column 1
-board.make_move(board.player[1], 1)  # Player 2 places in Column 1
-
-board.make_move(board.player[0], 2)  # Player 1 places in Column 0
 board.make_move(board.player[1], 2)  # Player 1 places in Column 0
-board.make_move(board.player[0], 2)  # Player 1 places in Column 0
-board.make_move(board.player[1], 2)  # Player 1 places in Column 0
-board.make_move(board.player[0], 2)  # Player 1 places in Column 0
-board.make_move(board.player[1], 2)  # Player 1 places in Column 0
-
-board.make_move(board.player[0], 3)  # Player 2 places in Column 1
 board.make_move(board.player[1], 3)  # Player 2 places in Column 1
-board.make_move(board.player[0], 3)  # Player 2 places in Column 1
-board.make_move(board.player[1], 3)  # Player 2 places in Column 1
-board.make_move(board.player[1], 3)  # Player 2 places in Column 1
-board.make_move(board.player[1], 3)  # Player 2 places in Column 1
-
-board.make_move(board.player[0], 4)  # Player 2 places in Column 1
-board.make_move(board.player[0], 4)  # Player 2 places in Column 1
-board.make_move(board.player[0], 4)  # Player 2 places in Column 1
-board.make_move(board.player[1], 4)  # Player 2 places in Column 1
-board.make_move(board.player[1], 4)  # Player 2 places in Column 1
-board.make_move(board.player[1], 4)  # Player 2 places in Column 1
-
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-board.make_move(board.player[1], 5)  # Player 2 places in Column 1
-
-board.make_move(board.player[1], 6)  # Player 2 places in Column 1
-board.make_move(board.player[1], 6)  # Player 2 places in Column 1
-board.make_move(board.player[1], 6)  # Player 2 places in Column 1
-board.make_move(board.player[1], 6)  # Player 2 places in Column 1
-board.make_move(board.player[1], 6)  # Player 2 places in Column 1
-
-
 
 
 board.print_board()
@@ -177,8 +128,6 @@ elif board.check_win(board.player[1]):
     print(f"{board.player[1]} wins!")
 else:
     print("No winner yet.")
-
-
 
 
 class BasePlayer:
