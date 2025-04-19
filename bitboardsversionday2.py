@@ -181,127 +181,23 @@ else:
 
 
 
-class CorePlayer:
-    def __init__ (self, id, name, is_AI):
+class BasePlayer:
+    def __init__ (self, name, is_AI, board):
         self.name = name
-        self.id = id
         self.is_AI = is_AI
+        self.board = board
 
-    def flip_bit(self, row, board, column):
+    def flip_bit(self, row, column):
         position = row * board.width + column  # Calculate the bit position
         self.board ^= (1 << position)  # Flip the bit at the position
         return self.board
 
-    def get_Nth_bit(self, n, board):
-        return (board.bitboards[board.player.index(self.name)] >> n) & 1
+    def get_Nth_bit(self, n):
+        return (player_board >> n) & 1
     
-    def set_Nth_bit(self, n, board):
-        board.bitboards[board.player.index(self.name)] |= (1 << n)
+    def set_Nth_bit(self, num, n):
+        return 
 
-class Human(CorePlayer):
-    def __init__ (self, id, name):
-        super().__init__(id, name, False)
-
-class AI(CorePlayer):
-    def __init__ (self, id, name):
-        super().__init__(id, name, True)
-    
-    def make_move(self, board):
+class Player:
+    def __init__ (self):
         pass
-    
-    def check_possible_4(self, board):
-        return self.check_vertical(board, 4) + \
-               self.check_horizontal(board, 4) + \
-                self.check_diagonal(board, 4)
-        
-    def check_possible_3(self, board):
-        my_board = board.bitboards[board.player.index(self.name)]
-        opponent_board = board.bitboards[1-board.player.index(self.name)]
-
-        combined_board = my_board | opponent_board 
-
-        right_shift_6 = my_board >> 6
-        left_shift_6 = my_board << 6
-        right_shift_12 = my_board >> 12
-        left_shift_12 = my_board << 12
-        right_shift_14 = my_board >> 14
-        left_shift_14 = my_board << 14
-        right_shift_7 = my_board >> 7
-        left_shift_7 = my_board << 7
-        
-        
-
-
-    def check_possible_2(self, board):
-        return self.check_vertical(board, 2) + \
-               self.check_horizontal(board, 2) + \
-                self.check_diagonal(board, 2)
-
-    def check_possible_1(self, board):
-        return self.check_vertical(board, 1) + \
-                self.check_horizontal(board, 1) + \
-                self.check_diagonal(board, 1)
-
-    def check_vertical(self, player_board, offset):
-        """Check for vertical win."""
-        total = 0
-        for column in range(self.width):
-            count = 0
-            for row in range(self.height):
-                position = column * self.height + row
-                if (player_board >> position) & 1:
-                    count += 1
-                    if count == offset:
-                        total += 1
-                else:
-                    count = 0
-        return total
-
-    def check_horizontal(self, player_board, offset):
-        """Check for horizontal win."""
-        total = 0
-        for row in range(self.height):
-            count = 0
-            for column in range(self.width):
-                position = column * self.height + row
-                if (player_board >> position) & 1:
-                    count += 1
-                    if count == offset:
-                        total += 1
-                else:
-                    count = 0
-        return total
-    
-    def check_diagonal(self, player_board, offset):
-        """Check for diagonal win."""
-        total = 0
-
-        for row in range(self.height - 1, -1, -1):
-            for column in range(self.width):
-                position = column * self.height + row
-                if (player_board >> position) & 1:
-                    # Check diagonal down-right
-                    if column <= self.width - offset and row <= self.height - offset:
-                        count = 0
-                        for i in range(1, offset):
-                            if (player_board >> (position + i * self.height + i)) & 1:
-                                count += 1
-                                if count == offset:
-                                    total += 1
-                            else:
-                                break
-                    if column <= self.width - offset and row >= offset - 1:
-                        count = 0
-                        for i in range(1, offset):
-                            if (player_board >> (position + i * self.height - i)) & 1:
-                                count += 1
-                                if count == offset:
-                                    total += 1
-                            else:
-                                break
-
-    def evaluate_board(self, board):
-        """Evaluate the board for the AI."""
-        pass
-
-        return total

@@ -215,22 +215,9 @@ class AI(CorePlayer):
                 self.check_diagonal(board, 4)
         
     def check_possible_3(self, board):
-        my_board = board.bitboards[board.player.index(self.name)]
-        opponent_board = board.bitboards[1-board.player.index(self.name)]
-
-        combined_board = my_board | opponent_board 
-
-        right_shift_6 = my_board >> 6
-        left_shift_6 = my_board << 6
-        right_shift_12 = my_board >> 12
-        left_shift_12 = my_board << 12
-        right_shift_14 = my_board >> 14
-        left_shift_14 = my_board << 14
-        right_shift_7 = my_board >> 7
-        left_shift_7 = my_board << 7
-        
-        
-
+        return self.check_vertical(board, 3) + \
+               self.check_horizontal(board, 3) + \
+                self.check_diagonal(board, 3)
 
     def check_possible_2(self, board):
         return self.check_vertical(board, 2) + \
