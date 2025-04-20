@@ -228,9 +228,86 @@ class AI(CorePlayer):
         left_shift_14 = my_board << 14
         right_shift_7 = my_board >> 7
         left_shift_7 = my_board << 7
-        
-        
 
+    def valid_columns(self, board):
+        combined_board = board.bitboards[0] | board.bitboards[1]
+        valid_columns = []
+        for column in range(board.width):
+            position = column * self.height + 5
+            if not (combined_board & (1 << position)):
+                valid_columns.append(column)
+
+        return valid_columns
+
+    def valid_moves(self, board):
+        valid_columns = valid_columns(board)
+        valid_moves = []
+        combined_board = board.bitboards[0] | board.bitboards[1]
+        for column in valid_columns:
+            for row in range(board.height):
+                position = column * board.height + row
+                if not (combined_board) & (1 << position):
+                    valid_moves.append((column, row))
+
+        return valid_moves
+    
+
+
+    def check_3(self, board, offset):
+        my_board = board.bitboards[board.player.index(self.name)]
+        opponent_board = board.bitboards[1-board.player.index(self.name)]
+        combined_board = my_board | opponent_board
+        empty_board = ~(my_board | opponent_board)
+
+        board_boundary_mask = (1 << (self.width * self.height)) - 1
+
+        # Check _XXX Horizontal
+        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
+
+        # Check X_XX Horizontal
+        result |= my_board & (empty_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
+
+        # Check XX_X Horizontal
+        result |= my_board & (my_board >> 6) & (empty_board >> 12) & (my_board >> 18) & board_boundary_mask
+
+        # Check XXX_ Horizontal
+        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & board_boundary_mask
+
+        # Check _XXX Vertical
+        result |= empty_board & (my_board >> 1) & (my_board >> 2) & (my_board >> 3) & board_boundary_mask
+
+        # Check X_XX Vertical
+        result |= my_board & (empty_board >> 1) & (my_board >> 2) & (my_board >> 3) & board_boundary_mask
+
+        # Check XX_X Vertical
+        result |= my_board & (my_board >> 1) & (empty_board >> 2) & (my_board >> 3) & board_boundary_mask
+
+        # Check XXX_ Vertical   
+        result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & board_boundary_mask
+
+        # Check _XXX Diagonal /
+        result |= empty_board & (my_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
+
+        # Check X_XX Diagonal /
+        result |= my_board & (empty_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
+
+        # Check XX_X Diagonal /
+        result |= my_board & (my_board >> 7) & (empty_board >> 14) & (my_board >> 21) & board_boundary_mask
+
+        # Check XXX_ Diagonal /
+        result |= my_board & (my_board >> 7) & (my_board >> 14) & (empty_board >> 21) & board_boundary_mask
+
+        # Check _XXX Diagonal \
+
+
+        # Check X_XX Diagonal \
+
+
+        # Check XX_X Diagonal \
+
+
+        # Check XXX_ Diagonal \ 
+        
 
     def check_possible_2(self, board):
         return self.check_vertical(board, 2) + \
