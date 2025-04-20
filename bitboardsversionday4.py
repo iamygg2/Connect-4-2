@@ -255,38 +255,35 @@ class AI(CorePlayer):
 
     def check_3(self, board, offset):
         my_board = board.bitboards[board.player.index(self.name)]
-        board_boundary_mask = (1 << (self.width * self.height)) - 1
         opponent_board = board.bitboards[1-board.player.index(self.name)]
-        combined_board = (my_board | opponent_board) & board_boundary_mask
-        empty_board = ~(my_board | opponent_board) 
-        horizontal_mask = (1 >> ((board.width-3) * board.height - 1)) - 1
-        vertical_mask = 0
+        combined_board = my_board | opponent_board
+        empty_board = ~(my_board | opponent_board)
 
-        for column in range(board.width):
-            for row in range(board.height-3, board.height):
-                position = column * self.height + row
-                vertical_mask |= (1 << position)
-
-
-        digonal_mask_one = 0
-        for column in range(board.width-4, board.width):
-            for row in range(board.height-3, board.height):
-                digital_mask_one |= (1 << (column * self.height + row))
+        board_boundary_mask = (1 << (self.width * self.height)) - 1
 
         # Check _XXX Horizontal
-        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & horizontal_mask
+        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
 
         # Check X_XX Horizontal
-        result |= (my_board << 6) & empty_board & (my_board >> 6) & (my_board >> 12) & horizontal_mask
+        result |= my_board & (empty_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
 
         # Check XX_X Horizontal
-        result |= (my_board << 12) & (my_board << 6) & empty_board & (my_board >> 6) & horizontal_mask
+        result |= my_board & (my_board >> 6) & (empty_board >> 12) & (my_board >> 18) & board_boundary_mask
 
         # Check XXX_ Horizontal
-        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & horizontal_mask
+        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & board_boundary_mask
+
+        # Check _XXX Vertical
+        result |= empty_board & (my_board >> 1) & (my_board >> 2) & (my_board >> 3) & board_boundary_mask
+
+        # Check X_XX Vertical
+        result |= my_board & (empty_board >> 1) & (my_board >> 2) & (my_board >> 3) & board_boundary_mask
+
+        # Check XX_X Vertical
+        result |= my_board & (my_board >> 1) & (empty_board >> 2) & (my_board >> 3) & board_boundary_mask
 
         # Check XXX_ Vertical   
-        result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & vertical_mask
+        result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & board_boundary_mask
 
         # Check _XXX Diagonal /
         result |= empty_board & (my_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
@@ -301,16 +298,16 @@ class AI(CorePlayer):
         result |= my_board & (my_board >> 7) & (my_board >> 14) & (empty_board >> 21) & board_boundary_mask
 
         # Check _XXX Diagonal \
-        result |= empty_board & (my_board >> 5) & (my_board >> 10) & (my_board >> 15) & board_boundary_mask
+
 
         # Check X_XX Diagonal \
-        result |= my_board & (empty_board >> 5) & (my_board >> 10) & (my_board >> 15) & board_boundary_mask
+
 
         # Check XX_X Diagonal \
-        result |= my_board & (my_board >> 5) & (empty_board >> 10) & (my_board >> 15) & board_boundary_mask
+
 
         # Check XXX_ Diagonal \ 
-        result |= my_board & (my_board >> 5) & (my_board >> 10) & (empty_board >> 15) & board_boundary_mask           
+        
 
     def check_possible_2(self, board):
         return self.check_vertical(board, 2) + \
