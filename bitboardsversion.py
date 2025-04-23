@@ -268,25 +268,27 @@ class AI(CorePlayer):
                 vertical_mask |= (1 << position)
 
 
-        digonal_mask_one = 0
+        diagonal_mask_one = 0
         for column in range(board.width-4, board.width):
             for row in range(board.height-3, board.height):
-                digital_mask_one |= (1 << (column * self.height + row))
+                diagonal_mask_one |= (1 << (column * self.height + row))
+
+        
 
         # Check _XXX Horizontal
-        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & horizontal_mask
+        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
 
         # Check X_XX Horizontal
-        result |= (my_board << 6) & empty_board & (my_board >> 6) & (my_board >> 12) & horizontal_mask
+        result |= (my_board << 6) & empty_board & (my_board >> 6) & (my_board >> 12) & board_boundary_mask
 
         # Check XX_X Horizontal
-        result |= (my_board << 12) & (my_board << 6) & empty_board & (my_board >> 6) & horizontal_mask
+        result |= (my_board << 12) & (my_board << 6) & empty_board & (my_board >> 6) & board_boundary_mask
 
         # Check XXX_ Horizontal
-        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & horizontal_mask
+        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & board_boundary_mask
 
         # Check XXX_ Vertical   
-        result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & vertical_mask
+        result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & vertical_mask & board_boundary_mask
 
         # Check _XXX Diagonal /
         result |= empty_board & (my_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
@@ -313,9 +315,7 @@ class AI(CorePlayer):
         result |= my_board & (my_board >> 5) & (my_board >> 10) & (empty_board >> 15) & board_boundary_mask           
 
     def check_possible_2(self, board):
-        return self.check_vertical(board, 2) + \
-               self.check_horizontal(board, 2) + \
-                self.check_diagonal(board, 2)
+        pass
 
     def check_possible_1(self, board):
         return self.check_vertical(board, 1) + \
