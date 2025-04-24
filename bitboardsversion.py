@@ -268,15 +268,24 @@ class AI(CorePlayer):
 
         for column in range(board.width):
             for row in range(board.height-3, board.height):
-                position = column * self.height + row
+                position = column * board.height + row
                 vertical_mask |= (1 << position)
 
 
         diagonal_mask_one = 0
         for column in range(board.width-4, board.width):
             for row in range(board.height-3, board.height):
-                diagonal_mask_one |= (1 << (column * self.height + row))
+                diagonal_mask_one |= (1 << (column * board.height + row))
 
+
+        diagonal_mask_one = 0
+        for column in range(0, board.width-4):
+            for row in range(0, board.height-3):
+                diagonal_mask_one |= (1 << (column * board.height + row))
+
+        diagonal_mask_two = (diagonal_mask_one) << (board.height + 1)
+        diagonal_mask_three = (diagonal_mask_two) << ((board.height + 1) * 2)
+        diagonal_mask_four = (diagonal_mask_three) << ((board.height+1) * 3)
 
         # Check _XXX Horizontal
         result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & horizontal_mask_one & board_boundary_mask
