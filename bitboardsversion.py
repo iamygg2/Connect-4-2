@@ -259,7 +259,11 @@ class AI(CorePlayer):
         opponent_board = board.bitboards[1-board.player.index(self.name)]
         combined_board = (my_board | opponent_board) & board_boundary_mask
         empty_board = ~(my_board | opponent_board) 
-        horizontal_mask = (1 >> ((board.width-3) * board.height - 1)) - 1
+        horizontal_mask_one = (1 << ((board.width-3) * board.height)) - 1
+        horizontal_mask_two = (1 << ((board.width-3) * board.height)) << board.height
+        horizontal_mask_three = (1 << ((board.width-3) * board.height)) << (board.height * 2)
+        horizontal_mask_four  = (1 << ((board.width-3) * board.height)) << (board.height * 3)
+
         vertical_mask = 0
 
         for column in range(board.width):
@@ -273,19 +277,18 @@ class AI(CorePlayer):
             for row in range(board.height-3, board.height):
                 diagonal_mask_one |= (1 << (column * self.height + row))
 
-        
 
         # Check _XXX Horizontal
-        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & board_boundary_mask
+        result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & horizontal_mask_one & board_boundary_mask
 
         # Check X_XX Horizontal
-        result |= (my_board << 6) & empty_board & (my_board >> 6) & (my_board >> 12) & board_boundary_mask
+        result |= (my_board << 6) & empty_board & (my_board >> 6) & (my_board >> 12) & horizontal_mask_two & board_boundary_mask
 
         # Check XX_X Horizontal
-        result |= (my_board << 12) & (my_board << 6) & empty_board & (my_board >> 6) & board_boundary_mask
+        result |= (my_board << 12) & (my_board << 6) & empty_board & (my_board >> 6) & horizontal_mask_three & board_boundary_mask
 
         # Check XXX_ Horizontal
-        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & board_boundary_mask
+        result |= my_board & (my_board >> 6) & (my_board >> 12) & (empty_board >> 18) & horizontal_mask_four & board_boundary_mask
 
         # Check XXX_ Vertical   
         result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & vertical_mask & board_boundary_mask
