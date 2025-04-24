@@ -303,16 +303,16 @@ class AI(CorePlayer):
         result |= my_board & (my_board >> 1) & (my_board >> 2) & (empty_board >> 3) & vertical_mask & board_boundary_mask
 
         # Check _XXX Diagonal /
-        result |= empty_board & (my_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
+        result |= empty_board & (my_board >> 7) & (my_board >> 14) & (my_board >> 21) & diagonal_mask_one & board_boundary_mask
 
         # Check X_XX Diagonal /
-        result |= my_board & (empty_board >> 7) & (my_board >> 14) & (my_board >> 21) & board_boundary_mask
+        result |= my_board & (empty_board >> 7) & (my_board >> 14) & (my_board >> 21) & diagonal_mask_two & board_boundary_mask
 
         # Check XX_X Diagonal /
-        result |= my_board & (my_board >> 7) & (empty_board >> 14) & (my_board >> 21) & board_boundary_mask
+        result |= my_board & (my_board >> 7) & (empty_board >> 14) & (my_board >> 21) & diaonal_mask_three & board_boundary_mask
 
         # Check XXX_ Diagonal /
-        result |= my_board & (my_board >> 7) & (my_board >> 14) & (empty_board >> 21) & board_boundary_mask
+        result |= my_board & (my_board >> 7) & (my_board >> 14) & (empty_board >> 21) & diagonal_mask_four & board_boundary_mask
 
         # Check _XXX Diagonal \
         result |= empty_board & (my_board >> 5) & (my_board >> 10) & (my_board >> 15) & board_boundary_mask
