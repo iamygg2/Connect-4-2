@@ -287,6 +287,14 @@ class AI(CorePlayer):
         diagonal_mask_three = (diagonal_mask_two) << ((board.height + 1) * 2)
         diagonal_mask_four = (diagonal_mask_three) << ((board.height+1) * 3)
 
+        diagonal_mask_five = 0
+        for column in range(0, board.width-3):
+            for row in range(board.width-3, board.width):
+                diagonal_mask_five |= (1 << (column * board.height + row))
+            
+            
+
+
         # Check _XXX Horizontal
         result = empty_board & (my_board >> 6) & (my_board >> 12) & (my_board >> 18) & horizontal_mask_one & board_boundary_mask
 
