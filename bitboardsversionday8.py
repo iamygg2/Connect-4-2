@@ -108,18 +108,9 @@ class Board:
                     line += " . "  # Empty spot
             print(line)
 
-    def is_full(self):
+    def isFull(self):
         """Check if the board is full."""
         return all((self.bitboards[0] | self.bitboards[1]) & (1 << (column * self.height + row)) for column in range(self.width) for row in range(self.height))
-
-    def undo_move(self, column, player):
-        """Undo the last move in the specified column."""
-        for row in range(self.height):
-            position = column * self.height + row
-            if (self.bitboards[0] | self.bitboards[1]) & (1 << position):
-                # Remove the piece from the bitboard
-                self.bitboards[self.player.index(player.get_name())] &= ~(1 << position)
-                return self.bitboards[self.player.index(player.get_name())]  # Undo the piece
 
 # Example usage
 board = Board("Alex", "Bob")
@@ -207,12 +198,6 @@ class CorePlayer:
     def set_Nth_bit(self, n, board):
         board.bitboards[board.player.index(self.name)] |= (1 << n)
 
-    def get_is_AI(self):
-        return self.is_AI
-
-    def get_name(self):
-        return self.name
-
 class Human(CorePlayer):
     def __init__ (self, id, name):
         super().__init__(id, name, False)
@@ -255,7 +240,7 @@ class AI(CorePlayer):
         return valid_columns
 
     def valid_moves(self, board):
-        valid_columns = self.valid_columns(board)
+        valid_columns = valid_columns(board)
         valid_moves = []
         combined_board = board.bitboards[0] | board.bitboards[1]
         for column in valid_columns:
@@ -433,7 +418,6 @@ class AI(CorePlayer):
         # Check X_ Vertical
         result |= my_board & (empty_board >> 1) & vertical_mask & board_boundary_mask
 
-        return result
 
     def count_bits(self, board):
         my_board = board.bitboards[board.player.index(self.name)]
@@ -548,83 +532,3 @@ class AI(CorePlayer):
         # Calculate the total score
         score = winning_3 + losing_3 + winning_2 + losing_2 + winning_1 + losing_1
         return score
-    
-    def minimax(self, board, depth, player, opponent, maximizing_player, alpha=float("-inf"), beta=float("inf")):
-        """Minimax algorithm with alpha-beta pruning."""
-        if depth == 0 or board.is_full():
-            return self.evaluate_board(board)
-
-
-        if board.check_win(board.player[0]):
-            return float("-inf")
-        if board.check_win(board.player[1]):
-            return float("inf")
-
-        best_move = None
-        if maximizing_player:
-            max_eval = float("-inf")
-            for column in range(board.width):
-                if board.is_valid_move(column):
-                    board.make_move(self, player, column)
-                    eval = self.minimax(board, depth - 1, False)
-                    board.undo_move(column, player)
-                    if eval > max_eval:
-                        max_eval = eval
-                        best_move = column
-                    alpha = max(alpha, eval)
-                    if beta <= alpha:
-                        break
-            return best_move, max_eval
-        else:
-            min_eval = float("inf")
-            for column in range(board.width):
-                if board.is_valid_move(column):
-                    board.make_move(self, opponent, column)
-                    eval = self.minimax(board, depth - 1, True)
-                    board.undo_move(column, player)
-                    if eval < min_eval:
-                        min_eval = eval
-                        best_move = column
-                    beta = min(beta, eval)
-                    if beta <= alpha:
-                        break
-            return best_move, min_eval
-
-class Game:
-    def __init__(self, player1, player2):
-        self.board = Board(player1, player2)
-        self.current_player = player1
-        self.game_over = False
-
-    def play(self):
-        while not self.game_over:
-            if self.current_player.get_is_AI():
-                if self.current_player == player1:
-                    self.current_player.minimax(self.board, 4, player1, player2, True)
-                    column, _ = self.current_player.minimax(self.board, 4, player1, player2, True)
-                else:
-                    self.current_player.minimax(self.board, 4, player2, player1, True)
-                    column, _ = self.current_player.minimax(self.board, 4, player2, player1, True)
-                self.board.print_board()
-                print(f"AI selects column {column}")
-                if self.board.is_valid_move(column):
-                    self.board.make_move(self.current_player, column)
-                    if self.board.check_win(self.current_player):
-                        self.board.print_board()
-                        print(f"{self.current_player.get_name()} wins!")
-                        self.game_over = True
-            elif not self.current_player.get_is_AI():
-                self.board.print_board()
-                column = int(input(f"{self.current_player.get_name()}, choose a column (1-7): ")) - 1
-                if self.board.is_valid_move(column):
-                    self.board.make_move(self.current_player, column)
-                    if self.board.check_win(self.current_player):
-                        self.board.print_board()
-                        print(f"{self.current_player} wins!")
-                        self.game_over = True
-
-
-player1 = Human(1, "Alex")
-player2 = AI(2, "Bob")
-game = Game(player1, player2)
-game.play()

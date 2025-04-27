@@ -108,6 +108,8 @@ class Board:
                     line += " . "  # Empty spot
             print(line)
 
+            
+
 # Example usage
 board = Board("Alex", "Bob")
 board.print_board()
