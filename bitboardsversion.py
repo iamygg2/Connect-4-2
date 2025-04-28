@@ -118,8 +118,8 @@ class Board:
             position = column * self.height + row
             if (self.bitboards[0] | self.bitboards[1]) & (1 << position):
                 # Remove the piece from the bitboard
-                self.bitboards[self.player.index(player.get_name())] &= ~(1 << position)
-                return self.bitboards[self.player.index(player.get_name())]  # Undo the piece
+                self.bitboards[self.player.index(player)] &= ~(1 << position)
+                return self.bitboards[self.player.index(player)]  # Undo the piece
 
 # Example usage
 board = Board("Alex", "Bob")
@@ -268,9 +268,9 @@ class AI(CorePlayer):
     
     
 
-    def check_3(self, board, boardIndex, offset):
+    def check_3(self, board, boardIndex):
         my_board = board.bitboards[boardIndex]
-        board_boundary_mask = (1 << (self.width * self.height)) - 1
+        board_boundary_mask = (1 << (board.width * board.height)) - 1
         opponent_board = board.bitboards[1-boardIndex]
         combined_board = (my_board | opponent_board) & board_boundary_mask
         empty_board = ~(my_board | opponent_board) 
@@ -348,7 +348,7 @@ class AI(CorePlayer):
     def check_2(self, board, boardIndex):
         my_board = board.bitboards[boardIndex]
         opponent_board = board.bitboards[1-boardIndex]
-        board_boundary_mask = (1 << (self.width * self.height)) - 1
+        board_boundary_mask = (1 << (board.width * board.height)) - 1
         empty_board = ~(my_board | opponent_board)
 
         horizontal_mask_one = (1 << ((board.width-2) * board.height)) - 1
@@ -412,13 +412,13 @@ class AI(CorePlayer):
         # Maybe skip diagonals as they are worthless
         my_board = board.bitboards[boardIndex]
         opponent_board = board.bitboards[1-boardIndex]
-        board_boundary_mask = (1 << (self.width * self.height)) - 1
+        board_boundary_mask = (1 << (board.width * board.height)) - 1
         empty_board = ~(my_board | opponent_board)
 
         horizontal_mask_one = (1 << ((board.width-1) * board.height)) - 1
         horizontal_mask_two = (1 << ((board.width-1) * board.height)) << board.height
 
-        verical_mask = 0
+        vertical_mask = 0
         for column in range(board.width):
             for row in range(board.height-1, board.height):
                 position = column * board.height + row
@@ -435,18 +435,17 @@ class AI(CorePlayer):
 
         return result
 
-    def count_bits(self, board):
-        my_board = board.bitboards[board.player.index(self.name)]
-        board_boundary_mask = (1 << (self.width * self.height)) - 1
-        my_board &= board_boundary_mask
+    def count_bits(self, board, result):
+        board_boundary_mask = (1 << (board.width * board.height)) - 1
+        result &= board_boundary_mask
         # PARALLEL BIT COUNTING IS FASTER -- TALK ABOUT BIG O
 
-        n = (n & 0x5555555555555555) + ((n & 0xAAAAAAAAAAAAAAAA) >> 1)
-        n = (n & 0x3333333333333333) + ((n & 0xCCCCCCCCCCCCCCCC) >> 2)
-        n = (n & 0x0F0F0F0F0F0F0F0F) + ((n & 0xF0F0F0F0F0F0F0F0) >> 4)
-        n = (n & 0x00FF00FF00FF00FF) + ((n & 0xFF00FF00FF00FF00) >> 8)
-        n = (n & 0x0000FFFF0000FFFF) + ((n & 0xFFFF0000FFFF0000) >> 16)
-        n = (n & 0x00000000FFFFFFFF) + ((n & 0xFFFFFFFF00000000) >> 32) # This last & isn't strictly necessary.
+        n = (result & 0x5555555555555555) + ((result & 0xAAAAAAAAAAAAAAAA) >> 1)
+        n = (result & 0x3333333333333333) + ((result & 0xCCCCCCCCCCCCCCCC) >> 2)
+        n = (result & 0x0F0F0F0F0F0F0F0F) + ((result & 0xF0F0F0F0F0F0F0F0) >> 4)
+        n = (result & 0x00FF00FF00FF00FF) + ((result & 0xFF00FF00FF00FF00) >> 8)
+        n = (result & 0x0000FFFF0000FFFF) + ((result & 0xFFFF0000FFFF0000) >> 16)
+        n = (result & 0x00000000FFFFFFFF) + ((result & 0xFFFFFFFF00000000) >> 32) # This last & isn't strictly necessary.
         return n
  
     def check_vertical(self, player_board, offset):
@@ -509,8 +508,9 @@ class AI(CorePlayer):
 
     def evaluate_board(self, board):
         """Evaluate the board for the AI."""
-        my_board = board.bitboards[board.player.index(self.name)]
-        opponent_board = board.bitboards[1-board.player.index(self.name)]
+        my_board = board.bitboards[board.player.index(self)]
+        opponent_board = board.bitboards[1-board.player.index(self)]
+        board_index = board.player.index(self)
 
         win_reward = float('inf')
         my_cost_3 = 1000
@@ -521,29 +521,29 @@ class AI(CorePlayer):
         opponent_cost_1 = 10
 
         # Check for immediate win or loss
-        if self.check_win(board.player[0]):
+        if board.check_win(board.player[0]):
             return float('-inf')
-        if self.check_win(board.player[1]):
+        if board.check_win(board.player[1]):
             return float('inf')
         
         # Check for potential wins
-        possible_3 = self.check_3(board, my_board)
-        winning_3 = self.count_bits(possible_3) * my_cost_3
+        possible_3 = self.check_3(board, board_index)
+        winning_3 = self.count_bits(board, possible_3) * my_cost_3
 
-        possible_3 = self.check_3(board, opponent_board)
-        losing_3 = self.count_bits(possible_3) * -opponent_cost_3
+        possible_3 = self.check_3(board, 1-board_index)
+        losing_3 = self.count_bits(board, possible_3) * -opponent_cost_3
         
-        possible_2 = self.check_2(board, my_board)
-        winning_2 = self.count_bits(possible_2) * my_cost_2
+        possible_2 = self.check_2(board, board_index)
+        winning_2 = self.count_bits(board, possible_2) * my_cost_2
 
-        possible_2 = self.check_2(board, opponent_board)
-        losing_2 = self.count_bits(possible_2) * -opponent_cost_2
+        possible_2 = self.check_2(board, 1-board_index)
+        losing_2 = self.count_bits(board, possible_2) * -opponent_cost_2
 
-        possible_1 = self.check_possible_1(board, my_board)
-        winning_1 = self.count_bits(possible_1) * my_cost_1
+        possible_1 = self.check_1(board, board_index)
+        winning_1 = self.count_bits(board, possible_1) * my_cost_1
 
-        possible_1 = self.check_possible_1(board, opponent_board)
-        losing_1 = self.count_bits(possible_1) * -opponent_cost_1
+        possible_1 = self.check_1(board, 1-board_index)
+        losing_1 = self.count_bits(board, possible_1) * -opponent_cost_1
 
         # Calculate the total score
         score = winning_3 + losing_3 + winning_2 + losing_2 + winning_1 + losing_1
@@ -552,21 +552,21 @@ class AI(CorePlayer):
     def minimax(self, board, depth, player, opponent, maximizing_player, alpha=float("-inf"), beta=float("inf")):
         """Minimax algorithm with alpha-beta pruning."""
         if depth == 0 or board.is_full():
-            return self.evaluate_board(board)
+            return 0, self.evaluate_board(board)
 
 
         if board.check_win(board.player[0]):
-            return float("-inf")
+            return float("-inf"), 0
         if board.check_win(board.player[1]):
-            return float("inf")
+            return float("inf"), 0
 
         best_move = None
         if maximizing_player:
             max_eval = float("-inf")
             for column in range(board.width):
                 if board.is_valid_move(column):
-                    board.make_move(self, player, column)
-                    eval = self.minimax(board, depth - 1, False)
+                    board.make_move(player, column)
+                    eval, _ = self.minimax(board, depth - 1, opponent, player, False)
                     board.undo_move(column, player)
                     if eval > max_eval:
                         max_eval = eval
@@ -579,8 +579,8 @@ class AI(CorePlayer):
             min_eval = float("inf")
             for column in range(board.width):
                 if board.is_valid_move(column):
-                    board.make_move(self, opponent, column)
-                    eval = self.minimax(board, depth - 1, True)
+                    board.make_move(player, column)
+                    eval, _ = self.minimax(board, depth - 1, opponent, player, True)
                     board.undo_move(column, player)
                     if eval < min_eval:
                         min_eval = eval
@@ -589,6 +589,8 @@ class AI(CorePlayer):
                     if beta <= alpha:
                         break
             return best_move, min_eval
+        
+    
 
 class Game:
     def __init__(self, player1, player2):
@@ -601,10 +603,10 @@ class Game:
             if self.current_player.get_is_AI():
                 if self.current_player == player1:
                     self.current_player.minimax(self.board, 4, player1, player2, True)
-                    column, _ = self.current_player.minimax(self.board, 4, player1, player2, True)
+                    eval, column = self.current_player.minimax(self.board, 4, player1, player2, True)
                 else:
                     self.current_player.minimax(self.board, 4, player2, player1, True)
-                    column, _ = self.current_player.minimax(self.board, 4, player2, player1, True)
+                    eval, column = self.current_player.minimax(self.board, 4, player2, player1, True)
                 self.board.print_board()
                 print(f"AI selects column {column}")
                 if self.board.is_valid_move(column):
@@ -613,6 +615,7 @@ class Game:
                         self.board.print_board()
                         print(f"{self.current_player.get_name()} wins!")
                         self.game_over = True
+        # CARRY ON FROM LINE 618
             elif not self.current_player.get_is_AI():
                 self.board.print_board()
                 column = int(input(f"{self.current_player.get_name()}, choose a column (1-7): ")) - 1
@@ -625,6 +628,6 @@ class Game:
 
 
 player1 = Human(1, "Alex")
-player2 = AI(2, "Bob")
+player2 = AI(2, "E")
 game = Game(player1, player2)
 game.play()
