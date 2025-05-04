@@ -1,0 +1,195 @@
+class Board:
+    def __init__(self, player1, player2):
+        self.width = 7
+        self.height = 6
+        self.size = self.width * self.height
+        self.player = (player1, player2)  # Tuple to hold the players
+        self.bitboards = [0, 0]  # List to hold the bitboards for both players
+
+
+    def make_move(self, player, column):
+        """Make a move for the current player."""
+        # Find the lowest empty row in the column
+        for row in range(self.height):
+            position = column * self.height + row  # Calculate the bit position
+            if not ((self.bitboards[0] | self.bitboards[1]) & (1 << position)):
+                self.bitboards[self.player.index(player)] |= (1 << position)
+                return self.bitboards[self.player.index(player)]  # Place the piece
+        raise ValueError("Column is full")
+    
+    def is_valid_move(self, column):
+        """Check if a move in the column is valid."""
+        for row in range(self.height):
+            position = column * self.height + row  # Calculate the bit position
+            if not ((self.bitboards[0] | self.bitboards[1]) & (1 << position)):
+                return True
+        return False
+
+    def check_win(self, player):
+        """Check if the player has won."""
+        player_board = self.bitboards[self.player.index(player)]
+        return self.check_vertical(player_board) or \
+               self.check_horizontal(player_board) or \
+                self.check_diagonal(player_board)
+    
+    def check_vertical(self, player_board):
+        """Check for vertical win."""
+        for column in range(self.width):
+            count = 0
+            for row in range(self.height):
+                position = column * self.height + row
+                if (player_board >> position) & 1:
+                    count += 1
+                    if count == 4:
+                        return True
+                else:
+                    count = 0
+        return False
+    
+
+    def check_horizontal(self, player_board):
+        """Check for horizontal win."""
+        for row in range(self.height):
+            count = 0
+            for column in range(self.width):
+                position = column * self.height + row
+                if (player_board >> position) & 1:
+                    count += 1
+                    if count == 4:
+                        return True
+                else:
+                    count = 0
+        return False
+    
+    def check_diagonal(self, player_board):
+        """Check for diagonal win."""
+        for row in range(self.height - 1, -1, -1):
+            for column in range(self.width):
+                position = column * self.height + row
+                if (player_board >> position) & 1:
+                    # Check diagonal down-right
+                    if column <= self.width - 4 and row <= self.height - 4:
+                        if (player_board >> (position + 3 * self.height + 3)) & 1 and \
+                           (player_board >> (position + 2 * self.height + 2)) & 1 and \
+                           (player_board >> (position + self.height + 1)) & 1:
+                            return True
+                    # Check diagonal down-left
+                    if column <= self.width-4 and row >= 3:
+                        if (player_board >> (position + 3 * self.height - 3)) & 1 and \
+                           (player_board >> (position + 2 * self.height - 2)) & 1 and \
+                           (player_board >> (position + self.height - 1)) & 1:
+                            return True
+        return False
+
+    def print_board(self):
+        """Print the current state of the board."""
+        print("\n 1  2  3  4  5  6  7")  # Column numbers for reference
+        for row in range(self.height - 1, -1, -1):  # Start from the top row
+            line = ""
+            for col in range(self.width):
+                position = col * self.height + row  # Calculate the bit position
+                if (self.bitboards[0] >> position) & 1:
+                    line += " X "  # Player 1's piece
+                elif (self.bitboards[1] >> position) & 1:
+                    line += " O "  # Player 2's piece
+                else:
+                    line += " . "  # Empty spot
+            print(line)
+
+    def is_full(self):
+        """Check if the board is full."""
+        return all((self.bitboards[0] | self.bitboards[1]) & (1 << (column * self.height + row)) for column in range(self.width) for row in range(self.height))
+
+    def undo_move(self, column, player):
+        """Undo the last move in the specified column."""
+        for row in range(self.height):
+            position = column * self.height + row
+            if (self.bitboards[0] | self.bitboards[1]) & (1 << position):
+                # Remove the piece from the bitboard
+                self.bitboards[self.player.index(player)] &= ~(1 << position)
+                return self.bitboards[self.player.index(player)]  # Undo the piece
+
+class CorePlayer:
+    def __init__ (self, id, name, is_AI):
+        self.name = name
+        self.id = id
+        self.is_AI = is_AI
+
+    def flip_bit(self, row, board, column):
+        position = row * board.width + column  # Calculate the bit position
+        self.board ^= (1 << position)  # Flip the bit at the position
+        return self.board
+
+    def get_Nth_bit(self, n, board):
+        return (board.bitboards[board.player.index(self.name)] >> n) & 1
+    
+    def set_Nth_bit(self, n, board):
+        board.bitboards[board.player.index(self.name)] |= (1 << n)
+
+    def get_is_AI(self):
+        return self.is_AI
+
+    def get_name(self):
+        return self.name
+    
+class Human(CorePlayer):
+    def __init__(self, id, name, bitboard, is_AI=False):
+        """Initialize a human player."""
+        super().__init__(id, name, is_AI)
+        self.board = bitboard
+
+    def get_move(self, board):
+        try:
+            move = int(input(f"{self.name}, enter your move (1-{board.width}): ")) - 1
+        except ValueError:
+            print(f"Invalid input. Please enter a number between 1 and {board.width}.")
+            return self.get_move(board)  # Retry if input is invalid
+        
+        if move < 0 or move >= board.width:
+            print(f"Invalid move. Please enter a number between 1 and {board.width}.")
+            return self.get_move(board)
+        
+        if not board.is_valid_move(move):
+            print(f"Column {move + 1} is full. Please choose another column.")
+            return self.get_move(board)
+
+        return move  # Return the valid move
+    
+class AI(CorePlayer):
+    def __init__(self, id, name, bitboard, is_AI=True):
+        """Initialize an AI player."""
+        super().__init__(id, name, is_AI)
+        self.bitboard = bitboard
+
+    def make_move(self, board):
+        """Make a move for the AI player."""
+        for column in range(board.width):
+            if board.is_valid_move(column):
+                return column
+            
+    def valid_columns(self, board):
+        combined_board = board.bitboards[0] | board.bitboards[1]
+        valid_columns = []
+        for column in range(board.width):
+            position = column * board.height + board.height - 1  # Check the top row of the column
+            if not (combined_board & (1 << position)):
+                valid_columns.append(column)
+
+        return valid_columns  # Return the list of valid columns
+
+    def valid_moves(self, board):
+        """Get a list of valid moves."""
+        combined_board = board.bitboards[0] | board.bitboards[1]
+        valid_columns = self.valid_columns(board)
+        valid_moves = []
+        for column in range(board.width):
+            for row in range(board.height):
+                position = column * board.height + row
+                if not (combined_board & (1 << position)):
+                    valid_moves.append((column, row))
+                    break
+        # Return the list of valid moves as tuples (column, row)
+        return valid_moves
+    
+    def check_3(self, board):
+        pass

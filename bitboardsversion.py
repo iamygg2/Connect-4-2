@@ -507,10 +507,10 @@ class AI(CorePlayer):
                             else:
                                 break
 
-    def evaluate_board(self, board):
+    def evaluate_board(self, board, player1, player2):
         """Evaluate the board for the AI."""
-        my_board = board.bitboards[board.player.index(self.name)]
-        opponent_board = board.bitboards[1-board.player.index(self.name)]
+        my_board = board.bitboards[board.player.index(player1)]
+        opponent_board = board.bitboards[board.player.index(player2)]
 
         win_reward = float('inf')
         my_cost_3 = 1000
@@ -521,9 +521,9 @@ class AI(CorePlayer):
         opponent_cost_1 = 10
 
         # Check for immediate win or loss
-        if self.check_win(board.player[0]):
+        if board.check_win(board.player[0]):
             return float('-inf')
-        if self.check_win(board.player[1]):
+        if board.check_win(board.player[1]):
             return float('inf')
         
         # Check for potential wins
@@ -552,7 +552,7 @@ class AI(CorePlayer):
     def minimax(self, board, depth, player, opponent, maximizing_player, alpha=float("-inf"), beta=float("inf")):
         """Minimax algorithm with alpha-beta pruning."""
         if depth == 0 or board.is_full():
-            return self.evaluate_board(board)
+            return self.evaluate_board(board, player, opponent)
 
 
         if board.check_win(board.player[0]):
@@ -565,8 +565,8 @@ class AI(CorePlayer):
             max_eval = float("-inf")
             for column in range(board.width):
                 if board.is_valid_move(column):
-                    board.make_move(self, player, column)
-                    eval = self.minimax(board, depth - 1, False)
+                    board.make_move(player, column)
+                    eval = self.minimax(board, depth - 1, opponent, player, False)
                     board.undo_move(column, player)
                     if eval > max_eval:
                         max_eval = eval
@@ -579,8 +579,8 @@ class AI(CorePlayer):
             min_eval = float("inf")
             for column in range(board.width):
                 if board.is_valid_move(column):
-                    board.make_move(self, opponent, column)
-                    eval = self.minimax(board, depth - 1, True)
+                    board.make_move(opponent, column)
+                    eval = self.minimax(board, depth - 1, player, opponent, True)
                     board.undo_move(column, player)
                     if eval < min_eval:
                         min_eval = eval
@@ -613,6 +613,7 @@ class Game:
                         self.board.print_board()
                         print(f"{self.current_player.get_name()} wins!")
                         self.game_over = True
+                self.current_player = player2 if self.current_player == player1 else player1
             elif not self.current_player.get_is_AI():
                 self.board.print_board()
                 column = int(input(f"{self.current_player.get_name()}, choose a column (1-7): ")) - 1
@@ -623,6 +624,7 @@ class Game:
                         print(f"{self.current_player} wins!")
                         self.game_over = True
 
+                self.current_player = player2 if self.current_player == player1 else player1
 
 player1 = Human(1, "Alex")
 player2 = AI(2, "Bob")
