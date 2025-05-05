@@ -197,7 +197,7 @@ class AI(CorePlayer):
 
         horizontal_mask_one = (1 << ((board.width-3) * board.height)) - 1
         horizontal_mask_two = horizontal_mask_one << board.height
-        horizontal_mask_thre = horizontal_mask_one << (2 * board.height)
+        horizontal_mask_three = horizontal_mask_one << (2 * board.height)
         horizontal_mask_four = horizontal_mask_one << (3 * board.height)
 
         vertical_mask = 0
@@ -213,7 +213,7 @@ class AI(CorePlayer):
             for row in range(0, board.height-3):
                 diagonal_mask_one |= (1 << (column * board.height + row))
         
-        digonal_mask_two = (diagonal_mask_one) << (board.height + 1)
+        diagonal_mask_two = (diagonal_mask_one) << (board.height + 1)
         diagonal_mask_three = (diagonal_mask_one) << (2 * (board.height + 1))
         diagonal_mask_four = (diagonal_mask_one) << (3 * (board.height + 1))
 
@@ -222,7 +222,7 @@ class AI(CorePlayer):
             for row in range(board.width-3, board.width):
                 diagonal_mask_five |= (1 << (column * board.height + row))
 
-        diagaonal_mask_six = (diagonal_mask_five) << (board.height - 1)
+        diagonal_mask_six = (diagonal_mask_five) << (board.height - 1)
         diagonal_mask_seven = (diagonal_mask_five) << (2 * (board.height - 1))
         diagonal_mask_eight = (diagonal_mask_five) << (3 * (board.height - 1))
 
