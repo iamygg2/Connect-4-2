@@ -1,3 +1,5 @@
+import copy
+
 class Board:
     def __init__(self, player1, player2):
         self.width = 7
@@ -14,17 +16,17 @@ class Board:
             position = column * self.height + row  # Calculate the bit position
             if not ((self.bitboards[0] | self.bitboards[1]) & (1 << position)):
                 self.bitboards[self.player.index(player)] |= (1 << position)
-                return self.bitboards[self.player.index(player)]  # Place the piece
-        raise ValueError("Column is full")
+                return # Place the piece
+        raise ValueError(f"Column {column} is full")
     
     def is_valid_move(self, column):
         """Check if a move in the column is valid."""
-        for row in range(self.height):
-            position = column * self.height + row  # Calculate the bit position
-            if not ((self.bitboards[0] | self.bitboards[1]) & (1 << position)):
-                return True
-        return False
-
+        top_row = self.height - 1  # Start from the top row
+        position = column * self.height + top_row  # Calculate the bit position
+        if column < 0 or column >= self.width:
+            return False
+        return not ((self.bitboards[0] | self.bitboards[1]) & (1 << position))
+    
     def check_win(self, player):
         """Check if the player has won."""
         player_board = self.bitboards[self.player.index(player)]
@@ -341,6 +343,17 @@ class AI(CorePlayer):
                 position = column * board.height + row
                 vertical_mask |= (1 << position)
 
+        # Check _X Horizontal
+        result = empty_board & (my_board >> 6) & board_boundary_mask
+ 
+        # Check X_ Horizontal
+        result |= (my_board << 6) & empty_board & horizontal_mask_two & board_boundary_mask
+
+        # Check X_ Vertical
+        result |= my_board & (empty_board >> 1) & vertical_mask & board_boundary_mask
+
+        return result
+
     def count_bits(self, board, result):
         bourd_boundary_mask = (1 << (board.width * board.height)) - 1
         result &= bourd_boundary_mask
@@ -397,3 +410,89 @@ class AI(CorePlayer):
         score = (winning_3 + winning_2 + winning_1 +
                  opponent_winning_3 + opponent_winning_2 + opponent_winning_1)
         return score
+
+    def mninimax2()
+
+    def minimax(self, board, depth, player, opponent, maximizing_player, alpha, beta, current_best_move):
+        """Minimax algorithm with alpha-beta pruning."""
+        if depth == 0 or board.is_full() or board.check_win(player) or board.check_win(opponent):
+            return current_best_move, self.evaluate_board(board, board.bitboards[board.player.index(player)], board.bitboards[board.player.index(opponent)], player, opponent)
+
+
+        best_score = float('-inf') if maximizing_player else float('inf')
+        best_move = None
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    board_copy = copy.deepcopy(board)  # Create a copy of the board
+                    board_copy.make_move(player, column)  # Make the move on the copy
+                    temp_move, eval = self.minimax(board_copy, depth - 1, opponent, player, False, alpha, beta, current_best_move)
+                    if eval > max_eval:
+                        max_eval = eval
+                        best_move = column
+            return best_move, max_eval
+        else:
+            min_eval = float('inf')
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    board_copy = copy.deepcopy(board)  # Create a copy of the board
+                    board_copy.make_move(player, column)  # Make the move on the copy
+                    temp_move, eval = self.minimax(board_copy, depth - 1, opponent, player, True, alpha, beta, current_best_move)
+                    if eval < min_eval:
+                        min_eval = eval
+                        best_move = column
+                        break
+            return best_move, min_eval
+        
+    def get_move(self, board):
+        """Get the AI's move using the minimax algorithm."""
+        best_move, _ = self.minimax(board, 4, self, board.player[1-board.player.index(self)], True, float('-inf'), float('inf'), None)
+        print(f"AI chooses column {best_move}")
+        return best_move
+        
+class Game:
+    def __init__(self, player1, player2):
+        self.board = Board(player1, player2)  # Initialize the board with players
+        self.current_player = player1  # Start with player 1
+        self.game_over = False  # Flag to check if the game is over
+        self.player = (player1, player2)
+
+    def play(self):
+        while True:
+            self.board.print_board()  # Print the current state of the board
+            if self.board.is_full():
+                print("The board is full. It's a draw!")
+                break
+
+            while True:
+                #try:
+                    if self.current_player.get_is_AI():
+                        #move = self.current_player.get_move(self.board)  # Get the AI's move
+
+                        #FOR TESTING PURPOSES ONLY
+                        move = 1
+                        #print(f"AI chooses column {move + 1}")
+
+                    else:
+                        move = self.current_player.get_move(self.board)  # Get the human player's move
+                    
+                    self.board.make_move(self.current_player, move)  # Make the move on the board
+                    break
+                #except ValueError:
+                 #   print("Invalid move. Please try again.")
+                 #   quit()
+
+            if self.board.check_win(self.current_player):  # Check for a win
+                self.board.print_board()
+                print(f"{self.current_player.get_name()} wins!")
+                break
+
+            # Switch players
+            self.current_player = self.player[1] if self.current_player == self.player[0] else self.player[0]
+
+player1 = Human(1, "Player 1", 0)
+player2 = AI(2, "AI", 0)  # Initialize the AI player
+game = Game(player1, player2)  # Create a new game instance
+game.play()  # Start the game
