@@ -411,7 +411,8 @@ class AI(CorePlayer):
                  opponent_winning_3 + opponent_winning_2 + opponent_winning_1)
         return score
 
-    def mninimax2()
+    def mninimax2():
+        pass
 
     def minimax(self, board, depth, player, opponent, maximizing_player, alpha, beta, current_best_move):
         """Minimax algorithm with alpha-beta pruning."""
