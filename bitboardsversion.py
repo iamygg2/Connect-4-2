@@ -1,3 +1,5 @@
+import copy
+
 def createBoard():
         player1Board = [[0 for _ in range(7)] for _ in range(6)]
         player2Board = [[0 for _ in range(7)] for _ in range(6)]
@@ -589,6 +591,41 @@ class AI(CorePlayer):
                         break
             return best_move, min_eval
         
+    def minimax2(self, board, depth, player, opponent, maximizing_player):
+        if board.check_win(player):
+            return float("inf"), -1
+        elif board.check_win(opponent):
+            return float("-inf"), -1
+        elif depth == 0 or board.is_full():
+            return self.evaluate_board(board), -1
+        
+        copied_board = copy.deepcopy(board)
+
+        if maximizing_player:
+            max_eval = float("-inf")
+            best_move = -1
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    copied_board.make_move(player, column)
+                    temp = self.minimax2(board, depth - 1, player, opponent, False)[0]
+                    copied_board.undo_move(column, player)
+                    if eval > max_eval:
+                        max_eval = eval
+                        best_move = column
+            return max_eval, best_move
+        else:
+            min_eval = float("inf")
+            best_move = -1
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    copied_board.make_move(opponent, column)
+                    temp = self.minimax2(board, depth - 1, player, opponent, True)[0]
+                    copied_board.undo_move(column, opponent)
+                    if eval < min_eval:
+                        min_eval = eval
+                        best_move = column
+            return min_eval, best_move
+
     
 
 class Game:
@@ -601,11 +638,10 @@ class Game:
         while not self.game_over:
             if self.current_player.get_is_AI():
                 if self.current_player == player1:
-                    self.current_player.minimax(self.board, 4, player1, player2, True)
-                    eval, column = self.current_player.minimax(self.board, 4, player1, player2, True)
+                    eval, column = self.current_player.minimax2(self.board, 4, player1, player2, True)
                 else:
-                    self.current_player.minimax(self.board, 4, player2, player1, True)
-                    eval, column = self.current_player.minimax(self.board, 4, player2, player1, True)
+                    self.current_player.minimax2(self.board, 4, player2, player1, True)
+                    eval, column = self.current_player.minimax2(self.board, 4, player2, player1, True)
                 self.board.print_board()
                 print(f"AI selects column {column}")
                 if self.board.is_valid_move(column):

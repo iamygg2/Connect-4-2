@@ -8,6 +8,24 @@ class Board:
         self.player = (player1, player2)  # Tuple to hold the players
         self.bitboards = [0, 0]  # List to hold the bitboards for both players
 
+    def __deepcopy__(self, memo):
+        # Create a new board without copying the players
+        copied_board = Board.__new__(Board)
+        memo[id(self)] = copied_board
+
+        # Manually copy values
+        copied_board.width = self.width
+        copied_board.height = self.height
+        copied_board.size = self.size
+
+        # Keep the same player tuple reference
+        copied_board.player = self.player
+
+        # Deepcopy bitboards (they're integers, so fine)
+        copied_board.bitboards = copy.deepcopy(self.bitboards, memo)
+
+        return copied_board
+
 
     def make_move(self, player, column):
         """Make a move for the current player."""
@@ -102,7 +120,7 @@ class Board:
         """Check if the board is full."""
         return all((self.bitboards[0] | self.bitboards[1]) & (1 << (column * self.height + row)) for column in range(self.width) for row in range(self.height))
 
-    def undo_move(self, column, player):
+    def undo_move(self, player, column):
         """Undo the last move in the specified column."""
         for row in range(self.height):
             position = column * self.height + row
@@ -411,8 +429,41 @@ class AI(CorePlayer):
                  opponent_winning_3 + opponent_winning_2 + opponent_winning_1)
         return score
 
-    def mninimax2():
-        pass
+    def minimax2(self, board, depth, player, opponent, maximizing_player):
+        if board.check_win(player):
+            return float("-inf"), -1
+        elif board.check_win(opponent):
+            return float("inf"), -1
+        elif depth == 0 or board.is_full():
+            return self.evaluate_board(board, board.bitboards[board.player.index(player)], board.bitboards[board.player.index(opponent)], player, opponent), -1
+        
+        copied_board = copy.deepcopy(board)
+
+        if maximizing_player:
+            max_eval = float("-inf")
+            best_move = -1
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    copied_board.make_move(player, column)
+                    temp = self.minimax2(board, depth - 1, player, opponent, False)[0]
+                    copied_board.undo_move(player, column)
+                    if temp > max_eval:
+                        max_eval = temp
+                        best_move = column
+            return max_eval, best_move
+        else:
+            min_eval = float("inf")
+            best_move = -1
+            for column in range(board.width):
+                if board.is_valid_move(column):
+                    copied_board.make_move(opponent, column)
+                    temp = self.minimax2(board, depth - 1, player, opponent, True)[0]
+                    copied_board.undo_move(opponent, column)
+                    if temp < min_eval:
+                        min_eval = temp
+                        best_move = column
+            return min_eval, best_move
+
 
     def minimax(self, board, depth, player, opponent, maximizing_player, alpha, beta, current_best_move):
         """Minimax algorithm with alpha-beta pruning."""
@@ -449,7 +500,7 @@ class AI(CorePlayer):
         
     def get_move(self, board):
         """Get the AI's move using the minimax algorithm."""
-        best_move, _ = self.minimax(board, 4, self, board.player[1-board.player.index(self)], True, float('-inf'), float('inf'), None)
+        _, best_move = self.minimax2(board, 4, self, board.player[1-board.player.index(self)], True)
         print(f"AI chooses column {best_move}")
         return best_move
         
@@ -470,10 +521,9 @@ class Game:
             while True:
                 #try:
                     if self.current_player.get_is_AI():
-                        #move = self.current_player.get_move(self.board)  # Get the AI's move
+                        move = self.current_player.get_move(self.board)  # Get the AI's move
 
                         #FOR TESTING PURPOSES ONLY
-                        move = 1
                         #print(f"AI chooses column {move + 1}")
 
                     else:
